@@ -159,3 +159,55 @@ services:
     volumes:
       - data-volume:/data
 ```
+
+## 📁 Setting Up Iceberg Table Directories (Required for FILE Storage)
+
+When using the `FILE` storage type in Polaris, it's your responsibility to ensure that the underlying directory structure for each Iceberg table exists **before** attempting to create or write to the table from Spark.
+
+### ❓ Why is this necessary?
+
+In this local setup:
+- Spark and Polaris share the same file-backed storage directory (`./icebergdata`, mounted as `/data`).
+- **Polaris must be able to write metadata files**, but if Spark creates the directory first (e.g., during a `.create()` call), the folder may end up with restrictive permissions.
+- This leads to errors like:
+
+```
+ServiceUnavailableException: Failed to create file: file:/data/...
+```
+
+To prevent this, use the helper script below to create the required folders with the correct permissions (`777`).
+
+
+### 🛠️ How to Use `table_setup.py`
+
+This script ensures the necessary folder structure exists for a given table and sets appropriate permissions.
+
+#### ✅ Usage
+
+```bash
+python ./icebergdata/table_setup.py <namespace.table>
+```
+
+Example:
+
+```bash
+python ./icebergdata/table_setup.py test.table
+```
+
+This will create:
+
+```swift
+./icebergdata/test/table/metadata/
+./icebergdata/test/table/data/
+```
+
+And ensure both are chmod 777.
+
+⚠️ Important: Always run this script before creating a table using Spark when using FILE storage in Polaris.
+
+## 🔐 Best Practice
+If you're building automation or test suites, you can integrate this script into your setup workflow to avoid unexpected permission errors.
+
+````bash
+python ./icebergdata/table_setup.py db.events && spark-submit your-script.py
+```
