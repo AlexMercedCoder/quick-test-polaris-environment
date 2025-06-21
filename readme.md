@@ -185,13 +185,15 @@ This script ensures the necessary folder structure exists for a given table and 
 #### ✅ Usage
 
 ```bash
-python ./icebergdata/table_setup.py <namespace.table>
+cd icebergdata
+python table_setup.py <namespace.table>
 ```
 
 Example:
 
 ```bash
-python ./icebergdata/table_setup.py test.table
+cd icebergdata
+python table_setup.py test.table
 ```
 
 This will create:
@@ -204,10 +206,3 @@ This will create:
 And ensure both are chmod 777.
 
 ⚠️ Important: Always run this script before creating a table using Spark when using FILE storage in Polaris.
-
-## 🔐 Best Practice
-If you're building automation or test suites, you can integrate this script into your setup workflow to avoid unexpected permission errors.
-
-````bash
-python ./icebergdata/table_setup.py db.events && spark-submit your-script.py
-```
