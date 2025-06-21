@@ -1,0 +1,45 @@
+services:
+  polaris:
+    image: apache/polaris:1.1.0-incubating-SNAPSHOT
+    container_name: polaris
+    ports:
+      - "8181:8181"
+      - "8182"
+    networks:
+      polaris-quickstart:
+    volumes:
+      - ./icebergdata:/data
+    environment:
+      AWS_REGION: $AWS_REGION
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root_user,my_secret_id
+      polaris.realm-context.realms: POLARIS
+      quarkus.log.file.enable: "false"
+      quarkus.otel.sdk.disabled: "true"
+      polaris.features."DROP_WITH_PURGE_ENABLED": "true"
+      polaris.features."ALLOW_INSECURE_STORAGE_TYPES": "true"
+      polaris.features."SUPPORTED_CATALOG_STORAGE_TYPES": "[\"FILE\",\"S3\",\"GCS\",\"AZURE\"]"
+      polaris.readiness.ignore-severe-issues: "true"
+
+  spark:
+    platform: linux/x86_64
+    image: alexmerced/spark35nb:latest
+    ports: 
+      - "8080:8080"  # Master Web UI
+      - "7077:7077"  # Master Port
+      - "8888:8888"  # Jupyter Notebook
+    volumes:
+      - ./icebergdata:/data
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    container_name: spark
+    networks:
+      polaris-quickstart:
+
+networks:
+  polaris-quickstart:
+
+
